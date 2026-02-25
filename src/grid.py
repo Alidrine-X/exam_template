@@ -24,6 +24,9 @@ class Grid:
 
     def set_player(self, player):
         self.player = player
+        """Placera spelaren på mitten av detta grid"""
+        self.player.pos_x = self.width // 2
+        self.player.pos_y = self.height // 2
 
     def clear(self, x, y):
         """Ta bort item från position"""
@@ -53,6 +56,24 @@ class Grid:
             self.set(j, 0, self.wall)
             self.set(j, self.height - 1, self.wall)
 
+    def add_two_l_walls(self):
+        # Vi skapar två L-väggar på fasta x-positioner (t.ex. vid 1/3 och 2/3 av banan)
+        # för att de inte ska hamna på varandra.
+        x_positions = [self.width // 3, (self.width // 3) * 2]
+
+        for x in x_positions:
+            y = self.height // 2  # Starta i mitten av höjden
+            dir_y = random.choice([-1, 1])  # Slumpa om L:et pekar upp eller ner
+
+            # 1. Rita den horisontella delen (4 block lång)
+            self.set(x, y, self.wall)
+            self.set(x + 1, y, self.wall)
+            self.set(x + 2, y, self.wall)
+            self.set(x + 3, y, self.wall)
+
+            # 2. Rita den vertikala delen (2 block till)
+            self.set(x, y + (1 * dir_y), self.wall)
+            self.set(x, y + (2 * dir_y), self.wall)
 
     # Används i filen pickups.py
     def get_random_x(self):

@@ -3,44 +3,66 @@ from .player import Player
 from . import pickups
 
 
-
 player = Player(2, 1)
-score = 0
+score = player.score
 inventory = []
 
 g = Grid()
 g.set_player(player)
 g.make_walls()
+
+g.add_two_l_walls()
 pickups.randomize(g)
 
-
-# TODO: flytta denna till en annan fil
-def print_status(game_grid):
+def print_status(game_grid, score):
     """Visa spelvärlden och antal poäng."""
     print("--------------------------------------")
     print(f"You have {score} points.")
     print(game_grid)
 
-
 command = "a"
 # Loopa tills användaren trycker Q eller X.
 while not command.casefold() in ["q", "x"]:
-    print_status(g)
-
-    command = input("Use WASD to move, Q/X to quit. ")
+    print_status(g, score)
+    command = input("Use WASD to move, I for inventory, Q/X to quit. ")
     command = command.casefold()[:1]
 
-    if command == "d" and player.can_move(1, 0, g):  # move right
-        # TODO: skapa funktioner, så vi inte behöver upprepa så mycket kod för riktningarna "W,A,S"
-        maybe_item = g.get(player.pos_x + 1, player.pos_y)
-        player.move(1, 0)
+    # Visa inventory
+    if command == "i":
+        print(f"Your inventory: {', '.join([item.name for item in inventory])}")
 
-        if isinstance(maybe_item, pickups.Item):
-            # we found something
-            score += maybe_item.value
-            print(f"You found a {maybe_item.name}, +{maybe_item.value} points.")
-            #g.set(player.pos_x, player.pos_y, g.empty)
-            g.clear(player.pos_x, player.pos_y)
+    # Dictionary med bokstav kopplad till riktning x och y
+    directions = {
+        "a": (-1, 0),   # Vänster
+        "d": (1, 0),    # Höger
+        "w": (0, -1),   # Upp
+        "s": (0, 1)     # Ner
+    }
+
+    if command in directions:
+        x, y = directions[command]
+
+        # Vad finns i rutan om spelaren tar nästa önskade steg
+        maybe_event = g.get(player.pos_x + x, player.pos_y + y)
+
+        # Om inte vägg hittas så kan spelaren flytta sitt nästa steg
+        if "■" != maybe_event:
+            player.move(x, y)
+            score -= 1
+
+            # Frukt eller grönsak hittad
+            if isinstance(maybe_event, pickups.Item):
+                # we found something
+                score += maybe_event.value
+                print(f"You found a {maybe_event.name}, +{maybe_event.value} points.")
+                inventory.append(maybe_event)
+                #g.set(player.pos_x, player.pos_y, g.empty)
+                g.clear(player.pos_x, player.pos_y)
+
+            # Finns poäng kvar för att ta ett steg till eller ska spelet avslutas
+            if score <= 0:
+                command = "q"
+                print("\nYour score is 0 and you loose :(")
 
 
 # Hit kommer vi när while-loopen slutar
