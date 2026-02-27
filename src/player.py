@@ -17,18 +17,20 @@ class Player:
         self.pos_x += dx
         self.pos_y += dy
 
+    def move_points(self):
+        """Hanterar poängavdrag (eller grace) och bördighet för ett utfört steg."""
+        # 1. Hantera poäng/grace
+        if self.grace_period > 0:
+            self.grace_period -= 1
+        else:
+            self.score -= 1
+
+        # 2. Hantera fertile soil
+        self.fertile_soil += 1
+
     def show_inventory(self):
         print(f"Your inventory: {', '.join([item.name for item in self.inventory])}")
 
-    def can_move(self, target_item, target_x, target_y, grid):
-
-        # Om det är en vägg, låt väggen avgöra om spelaren får passera (interact returnerar True/False)
-        from entity import Wall
-        if isinstance(target_item, Wall):
-            return target_item.interact(self, grid, target_x, target_y)
-
-        # För allt annat (empty, pickups, traps) är svaret True
-        return True
-
-
-
+    def is_alive(self):
+        """Returnerar True om spelaren har poäng kvar."""
+        return self.score > 0

@@ -1,6 +1,6 @@
 from grid import Grid
 from player import Player
-from entity import Entity
+from entity import Wall, Entity
 
 player = Player()
 grid = Grid()
@@ -22,11 +22,12 @@ while not command.casefold() in ["q", "x"]:
         player.show_inventory()
 
     # Dictionary med bokstav kopplad till riktning x och y
+    # J framför ger två steg i angiven riktning
     directions = {
         "a": (-1, 0),   # Vänster
         "d": (1, 0),    # Höger
         "w": (0, -1),   # Upp
-        "s": (0, 1)     # Ner
+        "s": (0, 1),     # Ner
     }
 
     if command in directions:
@@ -37,35 +38,25 @@ while not command.casefold() in ["q", "x"]:
         target_y = player.pos_y + y
         target_item = grid.get(target_x, target_y)
 
-        # Fråga spelaren: "Är det okej att gå hit?"
-        if player.can_move(target_item, target_x, target_y, grid):
+        # Är nästa steg en vägg,
+        # yttervägg kräver ny input, innervägg kräver spade eller ny input
+        if isinstance(target_item, Wall):
+            if not target_item.try_to_demolish(player, grid, target_x, target_y):
+                continue
 
-            # Stegräknare - efter något plockats upp, kan man gå 5 steg
-            # utan att det dras några poäng.
-            if player.grace_period > 0:
-                player.grace_period -= 1
-            else:
-                player.score -= 1
+        # Är nästa steg något ätbart, en fälla, kista eller nyckel
+        elif isinstance(target_item, Entity):
+            target_item.interact(player, grid, target_x, target_y) # Kör effekten
 
-            # Om det var ett annat föremål (mat/fälla/nyckel), kör dess interact
-            if isinstance(target_item, Entity):
-                target_item.interact(player, grid, target_x, target_y)
+        # Flytta spelare, uppdatera poäng och antal steg för bördig jord
+        player.move(x, y)
+        player.move_points()
+        grid.update_world(player)
 
-            # Flytta spelaren
-            player.move(x, y)
-
-            # Stegräknare - efter 25 steg så slumpas en ny consumable på spelplanen
-            # Välj något slumpmässig ätbart från den befintliga pickups-listan
-            player.fertile_soil += 1
-            if player.fertile_soil == 25:
-                name = grid.spawn_random_consumable()
-                print(f"🌱 A new {name} grew from the fertile soil!")
-                player.fertile_soil = 0
-
-            # Finns poäng kvar för att ta ett steg till eller ska spelet avslutas
-            if player.score <= 0:
-                print("\nYour score is 0 and you loose :(")
-                break
+        # Finns poäng kvar för att ta ett steg till eller ska spelet avslutas
+        if not player.is_alive():
+            print("\nYour score is 0 and you lose :(")
+            break
 
 
 # Hit kommer vi när while-loopen slutar

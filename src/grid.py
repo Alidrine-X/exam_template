@@ -95,7 +95,6 @@ class Grid:
         """Slumpa en y-position på spelplanen"""
         return random.randint(0, self.height-1)
 
-
     def is_empty(self, x, y):
         """Returnerar True om det inte finns något på aktuell ruta"""
         return self.get(x, y) == self.empty
@@ -140,3 +139,9 @@ class Grid:
 
         # Returnera namnet så att game.py kan skriva ut det
         return new_pickup.name
+
+    def update_world(self, player):
+        if player.fertile_soil >= 25:
+            name = self.spawn_random_consumable()
+            print(f"🌱 A new {name} grew from the fertile soil!")
+            player.fertile_soil = 0

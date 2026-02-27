@@ -46,7 +46,7 @@ class Trap(Entity):
     def interact(self, player, grid, target_x, target_y):
         player.score -= self.points
         # grid.clear anropas INTE här -> fällan blir kvar
-        print(f"Oh no, you found a {self.name} and got -{self.points} points.")
+        print(f"Oh no, you accidentally fell into a {self.name} and got -{self.points} points.")
 
 
 class Chest(Entity):
@@ -87,7 +87,7 @@ class Wall(Entity):
         super().__init__(name, symbol)
         self.destructible = destructible
 
-    def interact(self, player, grid, target_x, target_y):
+    def try_to_demolish(self, player, grid, target_x, target_y):
         # Om väggen inte kan förstöras (yttervägg)
         if not self.destructible:
             print("Den här väggen är för massiv för att rubba.")
@@ -98,11 +98,11 @@ class Wall(Entity):
 
         if shovel:
             print(f"Du använder din {shovel.name} och river väggen!")
-            grid.clear(target_x, target_y)  # Vi rensar positionen
+            grid.clear(target_x, target_y)
             player.inventory.remove(shovel)
             return True
         else:
-            print("En innervägg! Du behöver en spade för att komma igenom.")
+            print("Du behöver en spade för att komma igenom väggen.")
             return False
 
 
