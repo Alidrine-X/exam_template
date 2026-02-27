@@ -1,35 +1,25 @@
-from .grid import Grid
-from .player import Player
-from . import pickups
+from grid import Grid
+from player import Player
+from entity import Entity
 
+player = Player()
+grid = Grid()
 
-player = Player(2, 1)
-score = player.score
-inventory = []
-
-g = Grid()
-g.set_player(player)
-g.make_walls()
-
-g.add_two_l_walls()
-pickups.randomize(g)
-
-def print_status(game_grid, score):
-    """Visa spelvärlden och antal poäng."""
-    print("--------------------------------------")
-    print(f"You have {score} points.")
-    print(game_grid)
+grid.set_player(player)
+grid.make_outer_walls()
+grid.add_random_l_walls()
+grid.randomize_items()
 
 command = "a"
 # Loopa tills användaren trycker Q eller X.
 while not command.casefold() in ["q", "x"]:
-    print_status(g, score)
+    grid.print_status(player.score)
     command = input("Use WASD to move, I for inventory, Q/X to quit. ")
     command = command.casefold()[:1]
 
     # Visa inventory
     if command == "i":
-        print(f"Your inventory: {', '.join([item.name for item in inventory])}")
+        player.show_inventory()
 
     # Dictionary med bokstav kopplad till riktning x och y
     directions = {
@@ -42,27 +32,40 @@ while not command.casefold() in ["q", "x"]:
     if command in directions:
         x, y = directions[command]
 
-        # Vad finns i rutan om spelaren tar nästa önskade steg
-        maybe_event = g.get(player.pos_x + x, player.pos_y + y)
+        # Vad finns i rutan dit spelaren vill gå
+        target_x = player.pos_x + x
+        target_y = player.pos_y + y
+        target_item = grid.get(target_x, target_y)
 
-        # Om inte vägg hittas så kan spelaren flytta sitt nästa steg
-        if "■" != maybe_event:
+        # Fråga spelaren: "Är det okej att gå hit?"
+        if player.can_move(target_item, target_x, target_y, grid):
+
+            # Stegräknare - efter något plockats upp, kan man gå 5 steg
+            # utan att det dras några poäng.
+            if player.grace_period > 0:
+                player.grace_period -= 1
+            else:
+                player.score -= 1
+
+            # Om det var ett annat föremål (mat/fälla/nyckel), kör dess interact
+            if isinstance(target_item, Entity):
+                target_item.interact(player, grid, target_x, target_y)
+
+            # Flytta spelaren
             player.move(x, y)
-            score -= 1
 
-            # Frukt eller grönsak hittad
-            if isinstance(maybe_event, pickups.Item):
-                # we found something
-                score += maybe_event.value
-                print(f"You found a {maybe_event.name}, +{maybe_event.value} points.")
-                inventory.append(maybe_event)
-                #g.set(player.pos_x, player.pos_y, g.empty)
-                g.clear(player.pos_x, player.pos_y)
+            # Stegräknare - efter 25 steg så slumpas en ny consumable på spelplanen
+            # Välj något slumpmässig ätbart från den befintliga pickups-listan
+            player.fertile_soil += 1
+            if player.fertile_soil == 25:
+                name = grid.spawn_random_consumable()
+                print(f"🌱 A new {name} grew from the fertile soil!")
+                player.fertile_soil = 0
 
             # Finns poäng kvar för att ta ett steg till eller ska spelet avslutas
-            if score <= 0:
-                command = "q"
+            if player.score <= 0:
                 print("\nYour score is 0 and you loose :(")
+                break
 
 
 # Hit kommer vi när while-loopen slutar

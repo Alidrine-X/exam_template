@@ -1,4 +1,6 @@
 import random
+from entity import Wall, Key, Chest, pickups, traps, tools
+
 
 class Grid:
     """Representerar spelplanen. Du kan ändra standardstorleken och tecknen för olika rutor. """
@@ -45,35 +47,44 @@ class Grid:
             xs += "\n"
         return xs
 
-
-    def make_walls(self):
-        """Skapa väggar runt hela spelplanen"""
+    def make_outer_walls(self):
+        """Skapar oförstörbara ytterväggar runt hela spelplanen"""
+        # Vertikala väggar (vänster och höger sida)
         for i in range(self.height):
-            self.set(0, i, self.wall)
-            self.set(self.width - 1, i, self.wall)
+            self.set(0, i, Wall("Outer Wall", "█", destructible=False))
+            self.set(self.width - 1, i, Wall("Outer Wall", "█", destructible=False))
 
+        # Horisontella väggar (topp och botten)
         for j in range(1, self.width - 1):
-            self.set(j, 0, self.wall)
-            self.set(j, self.height - 1, self.wall)
+            self.set(j, 0, Wall("Outer Wall", "█", destructible=False))
+            self.set(j, self.height - 1, Wall("Outer Wall", "█", destructible=False))
 
-    def add_two_l_walls(self):
-        # Vi skapar två L-väggar på fasta x-positioner (t.ex. vid 1/3 och 2/3 av banan)
-        # för att de inte ska hamna på varandra.
-        x_positions = [self.width // 3, (self.width // 3) * 2]
+    def add_random_l_walls(self, count=2):
+        """Placerar ut 'count' antal L-formade väggar på slumpmässiga platser."""
+        for _ in range(count):
+            # 1. Slumpa en startpunkt (undvik ytterväggarna)
+            # Vi lämnar marginal (4 steg) så att L-formen får plats
+            start_x = random.randint(2, self.width - 5)
+            start_y = random.randint(2, self.height - 3)
 
-        for x in x_positions:
-            y = self.height // 2  # Starta i mitten av höjden
-            dir_y = random.choice([-1, 1])  # Slumpa om L:et pekar upp eller ner
+            # 2. Slumpa riktning (vänster/höger och upp/ner)
+            dir_x = random.choice([-1, 1])
+            dir_y = random.choice([-1, 1])
 
-            # 1. Rita den horisontella delen (4 block lång)
-            self.set(x, y, self.wall)
-            self.set(x + 1, y, self.wall)
-            self.set(x + 2, y, self.wall)
-            self.set(x + 3, y, self.wall)
+            # 3. Rita den horisontella delen (3-4 block lång)
+            length = random.randint(3, 7)
+            for i in range(length):
+                x = start_x + (i * dir_x)
+                # Vi kollar is_empty och player så vi inte skriver över andra saker
+                if self.is_empty(x, start_y) and (x != self.player.pos_x or start_y != self.player.pos_y):
+                    self.set(x, start_y, Wall("Inner Wall", "■", destructible=True))
 
-            # 2. Rita den vertikala delen (2 block till)
-            self.set(x, y + (1 * dir_y), self.wall)
-            self.set(x, y + (2 * dir_y), self.wall)
+            # 4. Rita den vertikala delen (2-3 block lång)
+            height = random.randint(2, 3)
+            for j in range(1, height + 1):
+                y = start_y + (j * dir_y)
+                if self.is_empty(start_x, y) and (start_x != self.player.pos_x or y != self.player.pos_y):
+                    self.set(start_x, y, Wall("Inner Wall", "■", destructible=True))
 
     # Används i filen pickups.py
     def get_random_x(self):
@@ -89,3 +100,43 @@ class Grid:
         """Returnerar True om det inte finns något på aktuell ruta"""
         return self.get(x, y) == self.empty
 
+    def print_status(self, score):
+        """Visa spelvärlden och antal poäng."""
+        print("--------------------------------------")
+        print(f"You have {score} points.")
+        print(self)
+
+    def place_items_from_list(self, item_list):
+        for item in item_list:
+            while True:
+                # slumpa en position tills vi hittar en som är ledig
+                x = self.get_random_x()
+                y = self.get_random_y()
+                if self.is_empty(x, y) and (x != self.player.pos_x or y != self.player.pos_y):
+                    self.set(x, y, item)
+                    break
+
+    def randomize_items(self):
+        """Huvudfunktion som placerar ut allt i spelet."""
+        self.place_items_from_list(pickups)
+        self.place_items_from_list(traps)
+        self.place_items_from_list(tools)
+
+        # Skapa 3 kistor och 3 matchande nycklar
+        for i in range(3):
+            key = Key(f"Key {i + 1}", "k", 0)
+            chest = Chest(f"Chest {i + 1}", "C", 100)  # Varje kista ger 100 poäng
+
+            self.place_items_from_list([key])
+            self.place_items_from_list([chest])
+
+    def spawn_random_consumable(self):
+        """Väljer ut EN slumpmässig grönsak från listan och placerar på griden."""
+        # Välj ett objekt-template från den importerade listan 'pickups'
+        new_pickup = random.choice(pickups)
+
+        # Skicka föremålet i en lista för utplacering i grid
+        self.place_items_from_list([new_pickup])
+
+        # Returnera namnet så att game.py kan skriva ut det
+        return new_pickup.name
