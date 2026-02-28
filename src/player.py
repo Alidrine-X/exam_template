@@ -19,13 +19,11 @@ class Player:
 
     def move_points(self):
         """Hanterar poängavdrag (eller grace) och bördighet för ett utfört steg."""
-        # 1. Hantera poäng/grace
         if self.grace_period > 0:
             self.grace_period -= 1
         else:
             self.score -= 1
 
-        # 2. Hantera fertile soil
         self.fertile_soil += 1
 
     def show_inventory(self):

@@ -11,7 +11,8 @@ class Grid:
 
     def __init__(self):
         """Skapa ett objekt av klassen Grid"""
-        # Spelplanen lagras i en lista av listor. Vi använder "list comprehension" för att sätta tecknet för "empty" på varje plats på spelplanen.
+        # Spelplanen lagras i en lista av listor. Vi använder "list comprehension" för att
+        # sätta tecknet för "empty" på varje plats på spelplanen.
         self.data = [[self.empty for y in range(self.width)] for z in range(
             self.height)]
 
@@ -118,15 +119,15 @@ class Grid:
     def is_empty(self, x, y):
         """Returnerar True om det inte finns något på aktuell ruta"""
 
-        # 1. Kolla gränser (förhindra krasch)
+        # Kolla yttre gränser (förhindra krasch)
         if not (0 <= x < self.width and 0 <= y < self.height):
             return False
 
-        # 2. Kolla väggar/items i listan
+        # Kolla om väggar/items
         if self.data[y][x] != self.empty:
             return False
 
-        # 3. Kolla spelaren (om spelaren har skapats än)
+        # Kolla spelaren (om spelaren har skapats än)
         if hasattr(self, 'player') and self.player is not None:
             if x == self.player.pos_x and y == self.player.pos_y:
                 return False  # Spelaren står här, alltså inte "empty"
@@ -142,7 +143,7 @@ class Grid:
     def place_items_from_list(self, item_list):
         for item in item_list:
             while True:
-                # slumpa en position tills vi hittar en som är ledig
+                # Slumpa en position tills vi hittar en som är ledig
                 x = self.get_random_x()
                 y = self.get_random_y()
                 if self.is_empty(x, y) and (x != self.player.pos_x or y != self.player.pos_y):

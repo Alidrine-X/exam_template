@@ -14,12 +14,20 @@ command = "a"
 # Loopa tills användaren trycker Q eller X.
 while not command.casefold() in ["q", "x"]:
     grid.print_status(player.score)
-    command = input("Use WASD to move, I for inventory, Q/X to quit. ")
+    command = input("Use WASD to move, I for inventory, Q/X to quit. ").lower()
     command = command.casefold()[:2]
 
-    # Visa inventory
+    # Visa spelarens inventory
     if command == "i":
         player.show_inventory()
+
+    # Vill spelaren gå ett eller två steg
+    if command.startswith("j") and len(command) > 1:
+        move_count = 2
+        direction_key = command[1]
+    else:
+        move_count = 1
+        direction_key = command
 
     # Dictionary med bokstav kopplad till riktning x och y
     # J framför ger två steg i angiven riktning
@@ -30,31 +38,48 @@ while not command.casefold() in ["q", "x"]:
         "s": (0, 1)    # Ner
     }
 
-    if command in directions:
-        x, y = directions[command]
+    # Kontrollera om riktningen är giltig
+    if direction_key in directions:
+        dx, dy = directions[direction_key]
 
-        # Vad finns i rutan dit spelaren vill gå
-        target_x = player.pos_x + x
-        target_y = player.pos_y + y
+        # Kolla vad som finns på första steget
+        step1_x = player.pos_x + dx
+        step1_y = player.pos_y + dy
+        step1_item = grid.get(step1_x, step1_y)
+
+        # Man kan aldrig hoppa ÖVER en vägg
+        if move_count == 2 and isinstance(step1_item, Wall):
+            print("Vägen är blockerad, du kan inte hoppa över väggar!")
+            continue
+
+        # Slutdestinationen blir ett eller två steg i angiven riktning
+        target_x = player.pos_x + (dx * move_count)
+        target_y = player.pos_y + (dy * move_count)
         target_item = grid.get(target_x, target_y)
-        print(f"Här är kommandot {command} {target_item} {target_x} {target_y}")
 
-        # Är nästa steg en vägg,
-        # yttervägg kräver ny input, innervägg kräver spade eller ny input
+        # Hantera om destinationen är en vägg, om yttervägg stå kvar
+        # om innervägg kontrollera om spade finns annars stå kvar
+        can_move = True
         if isinstance(target_item, Wall):
-            if not target_item.try_to_demolish(player, grid, target_x, target_y):
-                continue
+             if not target_item.try_to_demolish(player, grid, target_x, target_y):
+                can_move = False  # Stoppa flytten om väggen står kvar
 
-        # Är nästa steg något ätbart, en fälla, kista eller nyckel
-        elif isinstance(target_item, Entity):
-            target_item.interact(player, grid, target_x, target_y) # Kör effekten
+        # Flytta och dra poäng efter antal flyttade steg
+        if can_move:
+            player.pos_x = target_x
+            player.pos_y = target_y
 
-        # Flytta spelare, uppdatera poäng och antal steg för bördig jord
-        player.move(x, y)
-        player.move_points()
-        grid.update_world(player)
+            for _ in range(move_count):
+                player.move_points()
 
-        # Finns poäng kvar för att ta ett steg till eller ska spelet avslutas
+            # Lägg in i inventory om det ska sparas, justera poäng
+            if isinstance(target_item, Entity):
+                target_item.interact(player, grid, target_x, target_y)
+
+            # Uppdatera antal steg för bördig jord och nytt ätbart
+            grid.update_world(player)
+
+        # Avsluta spelet om poängen är slut
         if not player.is_alive():
             print("\nYour score is 0 and you lose :(")
             break

@@ -10,7 +10,7 @@ class Entity:
     def __str__(self):
         return self.symbol
 
-
+# Ätbart som plockas upp och läggs i inventory och ger spelare gratis steg
 class Consumable(Entity):
     def __init__(self, name, symbol, points):
         super().__init__(name, symbol)
@@ -24,8 +24,9 @@ class Consumable(Entity):
         print(f"You found a {self.name} and got {self.points} points!")
 
 
+# Verktyg som plockas upp läggs i inventory och kan användas till att ta bort innervägg
+# Den tas bort när den använts
 class Tool(Entity):
-    """Saker som hamnar i inventory (Spadar)"""
     def __init__(self, name, symbol, points):
         super().__init__(name, symbol)
         self.points = points
@@ -38,6 +39,7 @@ class Tool(Entity):
         print(f"You found a {self.name} but got no extra points")
 
 
+# Fälla som ger minuspoäng varje gång spelaren går på rutan
 class Trap(Entity):
     def __init__(self, name, symbol, points):
         super().__init__(name, symbol)
@@ -49,6 +51,8 @@ class Trap(Entity):
         print(f"Oh no, you accidentally fell into a {self.name} and got -{self.points} points.")
 
 
+# Skattkista som ger poäng om spelare öppnar den med en nyckel
+# Den tas bort när den öppnas
 class Chest(Entity):
     def __init__(self, name, symbol, points):
         super().__init__(name, symbol)
@@ -67,6 +71,8 @@ class Chest(Entity):
             print("The chest is locked. You need a key!")
 
 
+# Nyckel som plockas upp och läggs i inventory och kan låsa upp en kista
+# Den tas bort när den använts
 class Key(Entity):
     def __init__(self, name, symbol, points):
         super().__init__(name, symbol)
@@ -79,13 +85,15 @@ class Key(Entity):
         grid.clear(target_x, target_y)
         print("You found a key!")
 
-# Skapa två typer av väggar:
-# outer_wall = Wall("Outer Wall", "█", destructible=False)
-# inner_wall = Wall("Inner Wall", "■", destructible=True)
+# Två typer av väggar, yttervägg som inte kan krossas och innervägg som
+# kan tas bort med en spade
 class Wall(Entity):
     def __init__(self, name="Wall", symbol="■", destructible=False):
         super().__init__(name, symbol)
         self.destructible = destructible
+
+    def interact(self, player, grid, target_x, target_y):
+        pass
 
     def try_to_demolish(self, player, grid, target_x, target_y):
         # Om väggen inte kan förstöras (yttervägg)
