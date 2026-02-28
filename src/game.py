@@ -1,7 +1,7 @@
 import entity
 from grid import Grid
 from player import Player
-from entity import Entity, Wall, Trap
+from entity import Entity, Wall, Trap, Bomb
 
 grid = Grid()
 player = Player()
@@ -22,14 +22,33 @@ while not command.casefold() in ["q", "x"]:
     if command == "i":
         player.show_inventory()
 
-    # Desarmera fälla
+    # Desarmera en fälla
     if command == "t":
         current_item = grid.get(player.pos_x, player.pos_y)
 
+        # Spelarens nuvarande position måste vara på fällan
         if isinstance(current_item, Trap):
             current_item.disarm(grid, player.pos_x, player.pos_y)
         else:
-            print(f"You need to stand on a trap to remove it")
+            print(f"You need to stand on a trap to remove it.")
+
+    # Placera ut en bomb
+    if command == "b":
+        bomb = next((i for i in player.inventory if getattr(i, 'can_explode', False)), None)
+
+        # Om bomb finns i inventory, spelare inte är för nära väggen så tänd stubinen
+        if bomb:
+            if (1 < player.pos_x < grid.width - 2) and (1 < player.pos_y < grid.height - 2):
+                player.bomb_timer = 1
+                bomb.symbol = "*"
+                grid.set(player.pos_x, player.pos_y, bomb)
+                player.inventory.remove(bomb)
+                print(f"Now you have placed the bomb and lit the fuse.")
+            else:
+                print(f"You are to close to the wall, you got to move to place the bomb.")
+        else:
+            print(f"There is no bomb in your inventory, you have to pick it up first.")
+
 
     # Vill spelaren gå ett eller två steg
     if command.startswith("j") and len(command) > 1:
@@ -88,6 +107,11 @@ while not command.casefold() in ["q", "x"]:
 
             # Uppdatera antal steg för bördig jord och nytt ätbart
             grid.update_world(player)
+
+            # Bombens stubin har brunnit ut
+            if player.bomb_timer == 4:
+                grid.detonate_bomb(player)
+                player.bomb_timer = 0
 
         # Avsluta spelet om poängen är slut
         if not player.is_alive():

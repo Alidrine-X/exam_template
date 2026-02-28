@@ -116,6 +116,19 @@ class Wall(Entity):
             print("Du behöver en spade för att komma igenom väggen.")
             return False
 
+# Bomb som plockas upp och läggs i inventory och spränger 3 x 3 rutor
+# Den tas bort när den placerats ut
+class Bomb(Entity):
+    def __init__(self, name, symbol, points):
+        super().__init__(name, symbol)
+        self.points = points
+        self.can_explode= True
+
+    def interact(self, player, grid, target_x, target_y):
+        player.inventory.append(self)
+        grid.clear(target_x, target_y)
+        print(f"You found a {self.name}! Press B to use it")
+
 
 pickups = [
     Consumable("carrot", "?", 20),
@@ -141,4 +154,8 @@ traps = [
 tools = [
     Tool("shovel", "!", 0),
     Tool("spade", "!", 0)
+]
+
+bombs = [
+    Bomb("bomb", "B", 0)
 ]

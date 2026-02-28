@@ -1,5 +1,6 @@
 import random
-from entity import Wall, Key, Chest, pickups, traps, tools
+import time
+from entity import Wall, Key, Chest, Bomb, pickups, traps, tools, bombs
 
 
 class Grid:
@@ -8,6 +9,7 @@ class Grid:
     height = 12
     empty = "."  # Tecken för en tom ruta
     wall = "■"   # Tecken för en ogenomtränglig vägg
+    blast = "X"
 
     def __init__(self):
         """Skapa ett objekt av klassen Grid"""
@@ -158,6 +160,7 @@ class Grid:
         self.place_items_from_list(pickups)
         self.place_items_from_list(traps)
         self.place_items_from_list(tools)
+        self.place_items_from_list(bombs)
 
         # Skapa 3 kistor och 3 matchande nycklar
         for i in range(3):
@@ -183,3 +186,32 @@ class Grid:
             name = self.spawn_random_consumable()
             print(f"🌱 A new {name} grew from the fertile soil!")
             player.fertile_soil = 0
+
+    def detonate_bomb(self, player):
+        for y in range(self.height):
+            for x in range(self.width):
+
+                # Bomben har hittats, rensa 3 x 3 rutor
+                if isinstance(self.get(x, y), Bomb):
+                    print("\n💥 TICK... TICK... BOOM!")
+
+                    # Rita ut explosionen först i 3x3
+                    for dy in range(-1, 2):
+                        for dx in range(-1, 2):
+                            self.set(x + dx, y + dy, self.blast)
+
+                    print(self)  # Skriv ut grid så spelaren ser explosionen
+                    time.sleep(0.5)  # Pausa i en halv sekund så man hinner se!
+
+                    # Faktisk rensning i 3x3
+                    for dy in range(-1, 2):
+                        for dx in range(-1, 2):
+                            self.clear(x + dx, y + dy)
+
+                    # Spelaren stod i vägen
+                    if abs(player.pos_x - x) <= 1 and abs(player.pos_y - y) <= 1:
+                        print("Aargh! You got caught in the blast wave!")
+                        player.score -= 20  # Eller dör spelaren direkt?
+
+                    return  # Vi hittade och sprängde bomben, vi kan sluta leta
+

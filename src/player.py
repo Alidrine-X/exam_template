@@ -7,6 +7,7 @@ class Player:
         self.score = 10
         self.grace_period = 0
         self.fertile_soil = 0
+        self.bomb_timer = 0
         self.inventory = []
 
     # Flyttar spelaren. "dx" och "dy" är skillnaden
@@ -25,6 +26,9 @@ class Player:
             self.score -= 1
 
         self.fertile_soil += 1
+
+        if self.bomb_timer > 0:
+            self.bomb_timer += 1
 
     def show_inventory(self):
         if len(self.inventory) > 0:
