@@ -50,6 +50,9 @@ class Trap(Entity):
         # grid.clear anropas INTE här -> fällan blir kvar
         print(f"Oh no, you accidentally fell into a {self.name} and got -{self.points} points.")
 
+    def disarm(self, grid, x, y):
+        grid.clear(x, y)  # Tas bort från grid
+        print(f"You successfully disarmed the {self.name}")
 
 # Skattkista som ger poäng om spelare öppnar den med en nyckel
 # Den tas bort när den öppnas

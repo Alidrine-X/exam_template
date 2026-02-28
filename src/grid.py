@@ -18,8 +18,11 @@ class Grid:
 
 
     def get(self, x, y):
-        """Hämta det som finns på en viss position"""
-        return self.data[y][x]
+        """Hämta det som finns på en viss position. Returnera vägg om det är utanför spelplanen"""
+        if 0 <= x < self.width and 0 <= y < self.height:
+            return self.data[y][x]
+
+        return Wall("Outer Wall", "█", destructible=False)
 
     def set(self, x, y, value):
         """Ändra vad som finns på en viss position"""

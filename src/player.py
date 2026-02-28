@@ -27,7 +27,10 @@ class Player:
         self.fertile_soil += 1
 
     def show_inventory(self):
-        print(f"Your inventory: {', '.join([item.name for item in self.inventory])}")
+        if len(self.inventory) > 0:
+            print(f"Your inventory: {', '.join([item.name for item in self.inventory])}")
+        else:
+            print(f"Your inventory is empty")
 
     def is_alive(self):
         """Returnerar True om spelaren har poäng kvar."""

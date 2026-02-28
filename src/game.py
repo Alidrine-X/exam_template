@@ -1,6 +1,7 @@
+import entity
 from grid import Grid
 from player import Player
-from entity import Wall, Entity
+from entity import Entity, Wall, Trap
 
 grid = Grid()
 player = Player()
@@ -20,6 +21,15 @@ while not command.casefold() in ["q", "x"]:
     # Visa spelarens inventory
     if command == "i":
         player.show_inventory()
+
+    # Desarmera fälla
+    if command == "t":
+        current_item = grid.get(player.pos_x, player.pos_y)
+
+        if isinstance(current_item, Trap):
+            current_item.disarm(grid, player.pos_x, player.pos_y)
+        else:
+            print(f"You need to stand on a trap to remove it")
 
     # Vill spelaren gå ett eller två steg
     if command.startswith("j") and len(command) > 1:
