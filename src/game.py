@@ -2,12 +2,12 @@ from grid import Grid
 from player import Player
 from entity import Wall, Entity
 
-player = Player()
 grid = Grid()
+player = Player()
 
-grid.set_player(player)
 grid.make_outer_walls()
 grid.add_random_l_walls()
+grid.set_player(player)
 grid.randomize_items()
 
 command = "a"
@@ -15,7 +15,7 @@ command = "a"
 while not command.casefold() in ["q", "x"]:
     grid.print_status(player.score)
     command = input("Use WASD to move, I for inventory, Q/X to quit. ")
-    command = command.casefold()[:1]
+    command = command.casefold()[:2]
 
     # Visa inventory
     if command == "i":
@@ -27,7 +27,7 @@ while not command.casefold() in ["q", "x"]:
         "a": (-1, 0),   # Vänster
         "d": (1, 0),    # Höger
         "w": (0, -1),   # Upp
-        "s": (0, 1),     # Ner
+        "s": (0, 1)    # Ner
     }
 
     if command in directions:
@@ -37,6 +37,7 @@ while not command.casefold() in ["q", "x"]:
         target_x = player.pos_x + x
         target_y = player.pos_y + y
         target_item = grid.get(target_x, target_y)
+        print(f"Här är kommandot {command} {target_item} {target_x} {target_y}")
 
         # Är nästa steg en vägg,
         # yttervägg kräver ny input, innervägg kräver spade eller ny input

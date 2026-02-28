@@ -26,9 +26,29 @@ class Grid:
 
     def set_player(self, player):
         self.player = player
-        """Placera spelaren på mitten av detta grid"""
-        self.player.pos_x = self.width // 2
-        self.player.pos_y = self.height // 2
+
+        # Vi börjar med att titta på mitten av grid:en
+        target_x = self.width // 2
+        target_y = self.height // 2
+
+        # Om det inte är tomt i mitten, letar vi efter närmsta lediga ruta
+        # Vi letar i en fyrkant som blir större och större (offset 0, 1, 2...)
+        found = False
+        for offset in range(0, 10):
+            for dx in range(-offset, offset + 1):
+                for dy in range(-offset, offset + 1):
+                    # Testa en ny koordinat nära mitten
+                    test_x = target_x + dx
+                    test_y = target_y + dy
+
+                    # Kontroll om rutan är tom för placering av spelare
+                    if self.is_empty(test_x, test_y):
+                        self.player.pos_x = test_x
+                        self.player.pos_y = test_y
+                        found = True
+                        break  # Avbryt innersta loopen
+                if found: break  # Avbryt nästa loop
+            if found: break  # Avbryt yttersta loopen
 
     def clear(self, x, y):
         """Ta bort item från position"""
@@ -76,14 +96,14 @@ class Grid:
             for i in range(length):
                 x = start_x + (i * dir_x)
                 # Vi kollar is_empty och player så vi inte skriver över andra saker
-                if self.is_empty(x, start_y) and (x != self.player.pos_x or start_y != self.player.pos_y):
+                if self.is_empty(x, start_y):
                     self.set(x, start_y, Wall("Inner Wall", "■", destructible=True))
 
             # 4. Rita den vertikala delen (2-3 block lång)
             height = random.randint(2, 3)
             for j in range(1, height + 1):
                 y = start_y + (j * dir_y)
-                if self.is_empty(start_x, y) and (start_x != self.player.pos_x or y != self.player.pos_y):
+                if self.is_empty(start_x, y):
                     self.set(start_x, y, Wall("Inner Wall", "■", destructible=True))
 
     # Används i filen pickups.py
@@ -97,7 +117,21 @@ class Grid:
 
     def is_empty(self, x, y):
         """Returnerar True om det inte finns något på aktuell ruta"""
-        return self.get(x, y) == self.empty
+
+        # 1. Kolla gränser (förhindra krasch)
+        if not (0 <= x < self.width and 0 <= y < self.height):
+            return False
+
+        # 2. Kolla väggar/items i listan
+        if self.data[y][x] != self.empty:
+            return False
+
+        # 3. Kolla spelaren (om spelaren har skapats än)
+        if hasattr(self, 'player') and self.player is not None:
+            if x == self.player.pos_x and y == self.player.pos_y:
+                return False  # Spelaren står här, alltså inte "empty"
+
+        return True  # Hittade inget hinder!
 
     def print_status(self, score):
         """Visa spelvärlden och antal poäng."""
