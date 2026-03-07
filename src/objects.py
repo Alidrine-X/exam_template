@@ -2,6 +2,7 @@ class Entity:
     def __init__(self, name, symbol):
         self.name = name
         self.symbol = symbol
+        self.blocks_movement = False  # Standard: spelaren kan gå på allt
 
     def interact(self, player, grid, target_x, target_y):
         """Standardinteraktion: gör ingenting"""
@@ -10,8 +11,9 @@ class Entity:
     def __str__(self):
         return self.symbol
 
-# Ätbart som plockas upp och läggs i inventory och ger spelare gratis steg
+
 class Edible(Entity):
+    """Ätbart som plockas upp och läggs i inventory och ger spelare gratis steg"""
     def __init__(self, name, symbol, points, is_new=True):
         super().__init__(name, symbol)
         self.points = points
@@ -26,41 +28,59 @@ class Edible(Entity):
 
         player.grace_period = 5
         grid.clear(target_x, target_y)  # Tas bort från grid
-        print(f"You found a {self.name} and got {self.points} points!")
+        print(f"\nYou found a {self.name} and got {self.points} points!")
 
 
-# Verktyg som plockas upp läggs i inventory och kan användas till att ta bort innervägg
-# Den tas bort när den använts
 class Tool(Entity):
-    def __init__(self, name, symbol, points):
+    """Verktyg som plockas upp läggs i inventory och kan användas till att ta
+    bort innervägg. Verktyget tas bort när den använts"""
+    def __init__(self, name, symbol):
         super().__init__(name, symbol)
-        self.points = points
         self.can_dig = True
 
     def interact(self, player, grid, target_x, target_y):
         player.inventory.append(self)
         player.grace_period = 5
         grid.clear(target_x, target_y)  # Tas bort från grid
-        print(f"You found a {self.name} but got no extra points")
+        print(f"\nYou found a {self.name} but got no extra points")
 
 
-# Fälla som ger minuspoäng varje gång spelaren går på rutan
-class Trap(Entity):
-    def __init__(self, name, symbol, points):
+class Bomb(Entity):
+    """Bomb som plockas upp och läggs i inventory och spränger 3 x 3 rutor.
+    Bomben tas bort från inventory när den placerats ut och sätts till placed
+    för att inte kunna plockas upp igen"""
+    def __init__(self, name, symbol):
         super().__init__(name, symbol)
-        self.points = points
+        self.can_explode= True
+        self.placed = False
 
     def interact(self, player, grid, target_x, target_y):
-        player.score -= self.points
-        print(f"Oh no, you accidentally fell into a {self.name} and got -{self.points} points.")
+        if not self.placed:
+            player.inventory.append(self)
+            grid.clear(target_x, target_y)
+            print(f"\nYou found a {self.name}! Press B to use it")
+        else:
+            # Bomben är redan placerad, spelaren kan inte plocka upp den
+            print(f"\nThe bomb is already placed! You can't pick it up.")
 
-    def disarm(self, grid, x, y):
-        grid.clear(x, y)  # Tas bort från grid
-        print(f"You successfully disarmed the {self.name}")
 
-# Skattkista som ger poäng om spelare öppnar den med en nyckel
-# Den tas bort när den öppnas
+class Key(Entity):
+    """Nyckel som plockas upp och läggs i inventory och kan låsa upp en kista.
+    Nyckeln tas bort från inventory när den använts"""
+    def __init__(self, name, symbol):
+        super().__init__(name, symbol)
+        self.can_unlock = True
+
+    def interact(self, player, grid, target_x, target_y):
+        player.inventory.append(self)
+        player.grace_period = 5
+        grid.clear(target_x, target_y)
+        print("\nYou found a key!")
+
+
 class Chest(Entity):
+    """Skattkista som ger poäng om spelare öppnar den med en nyckel.
+    Kistan tas bort när den öppnas"""
     def __init__(self, name, symbol, points):
         super().__init__(name, symbol)
         self.points = points
@@ -70,36 +90,37 @@ class Chest(Entity):
         key = next((i for i in player.inventory if getattr(i, 'can_unlock', False)), None)
 
         if key:
-            print("You unlocked the chest!")
+            print("\nYou unlocked the chest!")
             player.score += self.points
             player.inventory.remove(key) # Nyckeln försvinner efter användning
             grid.clear(target_x, target_y)
         else:
-            print("The chest is locked. You need a key!")
+            print("\nThe chest is locked. You need a key!")
 
 
-# Nyckel som plockas upp och läggs i inventory och kan låsa upp en kista
-# Den tas bort när den använts
-class Key(Entity):
+class Trap(Entity):
+    """Fälla som ger minuspoäng varje gång spelaren går på rutan"""
     def __init__(self, name, symbol, points):
         super().__init__(name, symbol)
         self.points = points
-        self.can_unlock = True
 
     def interact(self, player, grid, target_x, target_y):
-        player.inventory.append(self)
-        player.grace_period = 5
-        grid.clear(target_x, target_y)
-        print("You found a key!")
+        player.score -= self.points
+        print(f"\nOh no, you accidentally fell into a {self.name} and got -{self.points} points.")
+
+    def disarm(self, grid, x, y):
+        grid.clear(x, y)  # Tas bort från grid
+        print(f"\nYou successfully disarmed the {self.name}")
 
 
-# Två typer av väggar, yttervägg som inte kan krossas och innervägg som
-# kan tas bort med en spade
 class Wall(Entity):
+    """Två typer av väggar, yttervägg som inte kan krossas och innervägg som
+    kan tas bort med en spade"""
     def __init__(self, name="Wall", symbol="■", destructible=False, wall_id=None):
         super().__init__(name, symbol)
         self.destructible = destructible
         self.wall_id = wall_id
+        self.blocks_movement = True  # Väggar blockerar alltid rörelse initialt
 
     def interact(self, player, grid, target_x, target_y):
         pass
@@ -107,14 +128,14 @@ class Wall(Entity):
     def try_to_demolish(self, player, grid):
         # Om väggen inte kan förstöras (yttervägg)
         if not self.destructible:
-            print("This wall is too massive to move.")
+            print("\nThis wall is too massive to move.")
             return False  # Hindra flytt
 
         # Om det är en innervägg, leta efter spade (Tool)
         shovel = next((i for i in player.inventory if getattr(i, 'can_dig', False)), None)
 
         if shovel:
-            print(f"You used your {shovel.name} and tore down the entire wall!")
+            print(f"\nYou used your {shovel.name} and tore down the entire wall!")
 
             # Spara väggens ID före rivning av vägg
             target_id = self.wall_id
@@ -131,32 +152,21 @@ class Wall(Entity):
             player.inventory.remove(shovel)
             return True
         else:
-            print("You need a shovel to get through the wall.")
+            print("\nYou need a shovel to get through the wall.")
             return False
 
-# Bomb som plockas upp och läggs i inventory och spränger 3 x 3 rutor
-# Den tas bort när den placerats ut
-class Bomb(Entity):
-    def __init__(self, name, symbol, points):
-        super().__init__(name, symbol)
-        self.points = points
-        self.can_explode= True
-
-    def interact(self, player, grid, target_x, target_y):
-        player.inventory.append(self)
-        grid.clear(target_x, target_y)
-        print(f"You found a {self.name}! Press B to use it")
 
 class Exit(Entity):
+    """Utgång från spelet när alla ätbara saker som placerades ut från början är upplockade"""
     def __init__(self, name= "Portal", symbol= "E"):
         super().__init__(name, symbol)
 
     def interact(self, player, grid, target_x, target_y):
         if grid.edibles_left > 0:
-            print(f" You can't exit when there are {grid.edibles_left} original edibles left.")
+            print(f"\nYou can't exit when there are {grid.edibles_left} original edibles left.")
             return False
         else:
-            print("Congratulations! You found the exit and won the game!")
+            print("\nCongratulations! You found the exit and won the game!")
             return True
 
 
@@ -182,10 +192,10 @@ traps = [
 ]
 
 tools = [
-    Tool("shovel", "!", 0),
-    Tool("spade", "!", 0)
+    Tool("shovel", "!"),
+    Tool("spade", "!")
 ]
 
 bombs = [
-    Bomb("bomb", "B", 0)
+    Bomb("bomb", "B")
 ]

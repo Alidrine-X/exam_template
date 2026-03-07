@@ -10,12 +10,14 @@ class Player:
         self.bomb_timer = 0
         self.inventory = []
 
+
     def move(self, dx, dy):
         """Flyttar spelaren.\n
         dx = horisontell förflyttning, från vänster till höger\n
         dy = vertikal förflyttning, uppifrån och ned"""
         self.pos_x += dx
         self.pos_y += dy
+
 
     def move_points(self):
         """Hanterar poängavdrag (eller grace) och bördighet för ett utfört steg."""
@@ -29,14 +31,15 @@ class Player:
         if self.bomb_timer > 0:
             self.bomb_timer += 1
 
+
     def show_inventory(self):
         """Visa spelaren innehållet i inventory vid kommande I"""
         if not self.inventory :
-            print(f"Your inventory is empty")
+            print(f"\nYour inventory is empty")
             return
 
         item_names = ', '.join([item.name for item in self.inventory])
-        print(f"Your inventory: {item_names}")
+        print(f"\nYour inventory: {item_names}")
 
 
     def is_alive(self):
