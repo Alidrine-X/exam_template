@@ -13,6 +13,7 @@ python -m src.game
 Fruit Loop – Terminalbaserat spel
 
 Fruit Loop är ett terminalbaserat spel där spelaren navigerar i en rutnätsbaserad spelvärld. Målet är att samla upp alla ursprungliga ätbara föremål, undvika fällor, använda verktyg och eventuellt placera och detonera bomber för att röja väggar eller hinder. När alla ätbara föremål är upplockade kan spelaren gå till utgången (E) för att vinna.
+<br>
 
 **Spelets mål**
 
@@ -24,14 +25,14 @@ Fruit Loop är ett terminalbaserat spel där spelaren navigerar i en rutnätsbas
 
 * När alla ursprungliga ätbara föremål är upplockade, nå utgången (E) för att vinna spelet.
 
-
+<br>
 **Spelarens handlingar**
 
 * Gå: W (upp), A (vänster), S (ned), D (höger)
 
 * Hoppa: JW, JA, JS, JD – hoppa över två rutor i angiven riktning
 
-
+<br>
 **Samla föremål till inventory**
 
 * Ätbart (t.ex. morot, äpple) – ger poäng och 5 steg grace-period
@@ -41,8 +42,7 @@ Fruit Loop är ett terminalbaserat spel där spelaren navigerar i en rutnätsbas
 * Nycklar – kan låsa upp kistor
 
 * Bomb – kan placeras på spelplanen och explodera i ett 3×3-område
-
-
+<br>
 **Interagera med objekt**
 
 * Ätbart: ökar poäng, ger grace-period
@@ -57,7 +57,7 @@ Fruit Loop är ett terminalbaserat spel där spelaren navigerar i en rutnätsbas
 
 * Exit (E): spelaren kan gå ut när alla ursprungliga ätbara föremål är upplockade
 
-
+<br>
 **Poäng och mekanik**
 
 * Spelaren startar med 10 poäng.
@@ -68,7 +68,7 @@ Fruit Loop är ett terminalbaserat spel där spelaren navigerar i en rutnätsbas
 
 * Bomb-timer: startar när bomb placeras ut; exploderar efter att spelaren tagit 3 steg.
 
-
+<br>
 **Tips**
 
 * Planera dina steg och inventory-användning för att maximera poäng och effektivitet.
