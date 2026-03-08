@@ -10,36 +10,48 @@ Börja läs igenom game.py - det är där projektet startas.
 python -m src.game
 ```
 
-Spelets beskrivning
+Fruit Loop är ett terminalbaserat äventyrsspel där spelaren navigerar på ett rutnätsbaserat spelbräde. Målet är att samla alla ursprungliga ätbara föremål, undvika fällor, använda verktyg och eventuellt placera och detonera bomber för att röja väggar eller hinder. När alla ätbara föremål är upplockade kan spelaren nå utgången (E) för att vinna spelet.
 
-Fruit Loop är ett terminalbaserat spel där spelaren navigerar i en spelvärld representerad av ett rutnät. Målet är att samla upp alla ursprungliga ätbara föremål, undvika fällor, använda verktyg och eventuellt placera och detonera bomber för att röja väggar eller hinder. När alla ätbara föremål är upplockade kan spelaren gå till utgången (E) för att vinna.
+Vad spelaren kan göra
 
-Vad spelaren kan göra:
+Rörelse:
 
-Rörelse: Gå (WASD) eller hoppa (JWASD) över 1–2 rutor.
+Gå: W, A, S, D (1 steg)
 
-Samla föremål: Ätbart, verktyg (spade), nycklar, bomb.
+Hoppa: JW, JA, JS, JD (2 steg)
 
-Interagera med objekt:
+Samla föremål till inventory:
 
-Ätbart ökar poäng och grace-period.
+Ätbart: ger poäng och gratis steg (grace-period)
 
-Verktyg kan riva innerväggar.
+Verktyg (spade): kan riva innerväggar
 
-Nyckel låser upp kistor.
+Nycklar: låser upp kistor
 
-Kistor ger poäng.
+Bomb: kan placeras och explodera i 3×3-rutor
 
-Bomb kan placeras och explodera i 3x3-område.
+Interaktion med objekt:
 
-Fällor ger minuspoäng, kan desarmeras med kommando T.
+Ätbart: ökar poäng och grace-period
 
-Exit kan användas när alla ursprungliga ätbara föremål är upplockade med kommando E
+Verktyg: kan användas för att riva innerväggar
 
-Poäng och mekanik:
+Nyckel: låser upp kistor
 
-Spelaren får 10 poäng vid start. Poäng minskas med ett per steg, men poäng stoppas 5 steg under grace-period när ätbart föremål plockats upp.
+Kistor: ger poäng
 
-Steg som tas ökar “fertile_soil”, vilket genererar något nytt ätbart efter 25 steg.
+Bomb: kan placeras och explodera i 3×3-område
 
-Bomb-timer startas då bomb placerats ut io spelvärlden och exploderar när spelare tagit 3 steg.
+Fällor: ger minuspoäng, kan desarmeras med kommando T
+
+Exit: kan användas när alla ursprungliga ätbara föremål är upplockade med kommando E
+
+Poäng och spelmekanik
+
+Spelaren börjar med 10 poäng.
+
+Poängen minskar med 1 per steg, men stoppar under grace-period (5 steg) när ett ätbart föremål plockas upp.
+
+Varje steg ökar spelarens fertile_soil, vilket genererar ett nytt ätbart föremål efter 25 steg.
+
+Bomb-timer startar när bomben placeras i spelvärlden och exploderar efter att spelaren tagit 3 steg.
