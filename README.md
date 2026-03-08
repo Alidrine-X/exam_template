@@ -24,13 +24,15 @@ Fruit Loop är ett terminalbaserat spel där spelaren navigerar i en rutnätsbas
 
 * När alla ursprungliga ätbara föremål är upplockade, nå utgången (E) för att vinna spelet.
 
+
 **Spelarens handlingar**
 
 * Gå: W (upp), A (vänster), S (ned), D (höger)
 
 * Hoppa: JW, JA, JS, JD – hoppa över två rutor i angiven riktning
 
-Samla föremål till inventory
+
+**Samla föremål till inventory**
 
 * Ätbart (t.ex. morot, äpple) – ger poäng och 5 steg grace-period
 
@@ -39,6 +41,7 @@ Samla föremål till inventory
 * Nycklar – kan låsa upp kistor
 
 * Bomb – kan placeras på spelplanen och explodera i ett 3×3-område
+
 
 **Interagera med objekt**
 
@@ -54,6 +57,7 @@ Samla föremål till inventory
 
 * Exit (E): spelaren kan gå ut när alla ursprungliga ätbara föremål är upplockade
 
+
 **Poäng och mekanik**
 
 * Spelaren startar med 10 poäng.
@@ -63,6 +67,7 @@ Samla föremål till inventory
 * Fertile soil: varje steg ökar värdet; efter 25 steg genereras ett nytt slumpmässigt ätbart föremål på spelplanen.
 
 * Bomb-timer: startar när bomb placeras ut; exploderar efter att spelaren tagit 3 steg.
+
 
 **Tips**
 
