@@ -42,6 +42,7 @@ Fruit Loop är ett terminalbaserat spel där spelaren navigerar i en rutnätsbas
 * Nycklar – kan låsa upp kistor
 
 * Bomb – kan placeras på spelplanen och explodera i ett 3×3-område
+
 <br>
 **Interagera med objekt**
 
